@@ -16,7 +16,7 @@ jobs:
     - name: Set up PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.0'
+        php-version: '7.4'
 
     - name: Install dependencies
       run: |
@@ -42,6 +42,15 @@ jobs:
 
     - name: Verify Blade templates
       run: npm run production
+
+    - name: Intentional Error - Missing Required File
+      run: rm -f some_required_file.txt
+
+    - name: Intentional Error - Incorrect Command
+      run: some_incorrect_command
+
+    - name: Intentional Error - PHP Syntax Error
+      run: echo '<?php syntax error' > syntax_error.php && php -l syntax_error.php || true
 
     - name: Collect artifacts
       uses: actions/upload-artifact@v2
