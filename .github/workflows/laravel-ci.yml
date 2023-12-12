@@ -16,10 +16,12 @@ jobs:
     - name: Set up PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.0' # Puedes ajustar la versión según tus requisitos
+        php-version: '8.0'
 
     - name: Install dependencies
-      run: composer install --no-progress --no-suggest --no-interaction
+      run: |
+        composer install --no-progress --no-suggest --no-interaction
+        npm install
 
     - name: Copy environment file
       run: cp .env.example .env
@@ -27,5 +29,24 @@ jobs:
     - name: Generate application key
       run: php artisan key:generate
 
-    - name: Run tests
+    - name: Run PHPUnit tests
       run: vendor/bin/phpunit
+
+    - name: Check coding standards
+      run: vendor/bin/php-cs-fixer fix --dry-run --stop-on-violation --using-cache=no
+
+    - name: Run Laravel Dusk tests
+      env:
+        DB_DATABASE: sqlite
+      run: php artisan dusk
+
+    - name: Verify Blade templates
+      run: npm run production
+
+    - name: Collect artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: test-results
+        path: |
+          tests/Reports
+          storage/logs
