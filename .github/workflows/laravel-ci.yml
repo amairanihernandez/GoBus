@@ -1,34 +1,57 @@
-# tests.yml
+name: Laravel CI
 
-pruebas_de_codificacion:
-  - nombre: codificacion_modulo_x
-    descripcion: Pruebas de codificación para el módulo X
-    comando: go test ./public
+on:
+  push:
+    branches:
+      - main
 
-pruebas_de_modulos:
-  - nombre: pruebas_modulo_a
-    descripcion: Pruebas para el módulo A
-    comando: go test ./resources
+jobs:
+  test:
+    runs-on: ubuntu-latest
 
-  - nombre: pruebas_modulo_b
-    descripcion: Pruebas para el módulo B
-    comando: go test ./app
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-pruebas_de_vistas:
-  - nombre: pruebas_vista_principal
-    descripcion: Pruebas para la vista principal
-    comando: go test ./views/boletos.blade.php
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.0'
 
-enlazamientos_con_vista_principal:
-  - nombre: pruebas_enlazamientos_modulo_x
-    descripcion: Pruebas de enlazamientos desde el módulo X a la vista principal
-    comando: go test ./views/home.blade.php
+    - name: Install dependencies
+      run: |
+        composer install --no-progress --no-suggest --no-interaction
+        npm install
 
-pruebas_de_validaciones:
-  - nombre: validaciones_modulo_a
-    descripcion: Pruebas de validaciones para el módulo A
-    comando: go test ./views/welcome.blade.php
+    - name: Copy environment file
+      run: cp .env.example .env
 
-  - nombre: validaciones_modulo_b
-    descripcion: Pruebas de validaciones para el módulo B
-    comando: go test ./views/pagar.blade.php
+    - name: Generate application key
+      run: php artisan key:generate
+
+    - name: Run PHPUnit tests
+      run: vendor/bin/phpunit
+
+    - name: Check coding standards
+      run: vendor/bin/php-cs-fixer fix --dry-run --stop-on-violation --using-cache=no
+
+    - name: Run Laravel Dusk tests (intentionally failing)
+      env:
+        DB_DATABASE: sqlite
+      run: |
+        php artisan dusk:install
+        php artisan dusk
+
+    - name: Verify Blade templates (intentionally failing)
+      run: npm run production
+
+    - name: Intentional error for demonstration
+      run: echo "Intentional error for demonstration" && exit 1
+
+    - name: Collect artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: test-results
+        path: |
+          tests/Reports
+          storage/logs
