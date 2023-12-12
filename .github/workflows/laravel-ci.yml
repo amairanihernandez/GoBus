@@ -1,61 +1,34 @@
-name: Laravel CI
+# tests.yml
 
-on:
-  push:
-    branches:
-      - main
+pruebas_de_codificacion:
+  - nombre: codificacion_modulo_x
+    descripcion: Pruebas de codificación para el módulo X
+    comando: go test ./public
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
+pruebas_de_modulos:
+  - nombre: pruebas_modulo_a
+    descripcion: Pruebas para el módulo A
+    comando: go test ./resources
 
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+  - nombre: pruebas_modulo_b
+    descripcion: Pruebas para el módulo B
+    comando: go test ./app
 
-    - name: Set up PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.0'
+pruebas_de_vistas:
+  - nombre: pruebas_vista_principal
+    descripcion: Pruebas para la vista principal
+    comando: go test ./views/boletos.blade.php
 
-    - name: Install dependencies
-      run: |
-        composer install --no-progress --no-suggest --no-interaction
-        npm install
+enlazamientos_con_vista_principal:
+  - nombre: pruebas_enlazamientos_modulo_x
+    descripcion: Pruebas de enlazamientos desde el módulo X a la vista principal
+    comando: go test ./views/home.blade.php
 
-    - name: Copy environment file
-      run: cp .env.example .env
+pruebas_de_validaciones:
+  - nombre: validaciones_modulo_a
+    descripcion: Pruebas de validaciones para el módulo A
+    comando: go test ./views/welcome.blade.php
 
-    - name: Generate application key
-      run: php artisan key:generate
-
-    - name: Run PHPUnit tests
-      run: vendor/bin/phpunit
-
-    - name: Check coding standards
-      run: vendor/bin/php-cs-fixer fix --dry-run --stop-on-violation --using-cache=no
-
-    - name: Run Laravel Dusk tests
-      env:
-        DB_DATABASE: sqlite
-      run: php artisan dusk
-
-    - name: Verify Blade templates
-      run: npm run production
-
-    - name: Intentional Error - Missing Required File
-      run: rm -f some_required_file.txt
-
-    - name: Intentional Error - Incorrect Command
-      run: some_incorrect_command
-
-    - name: Intentional Error - PHP Syntax Error
-      run: echo '<?php syntax error' > syntax_error.php && php -l syntax_error.php || true
-
-    - name: Collect artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: test-results
-        path: |
-          tests/Reports
-          storage/logs
+  - nombre: validaciones_modulo_b
+    descripcion: Pruebas de validaciones para el módulo B
+    comando: go test ./views/pagar.blade.php
